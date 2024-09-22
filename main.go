@@ -25,7 +25,7 @@ type KeyPair struct {
 
 // Store key info globally //
 var (
-	keys []KeyPair
+	savedKeys []KeyPair
 )
 
 func generateKeys() []KeyPair {
@@ -68,7 +68,11 @@ func generateKeys() []KeyPair {
 	}
 }
 
-func getJWKs() jose.JSONWebKeySet {
+func resetKeys() {
+	savedKeys = nil
+}
+
+func getJWKs(keys []KeyPair) jose.JSONWebKeySet {
 	var jwks []jose.JSONWebKey
 	for _, key := range keys {
 		jwk := jose.JSONWebKey{
@@ -87,7 +91,7 @@ func getJWKs() jose.JSONWebKeySet {
 	return keySet
 }
 
-func generateJWT(shouldBeExpired bool) (string, error) {
+func generateJWT(keys []KeyPair, shouldBeExpired bool) (string, error) {
 	// Select between expired key and active key //
 	var expireAt int64
 	var kid string
@@ -132,7 +136,7 @@ func postAuth(writer http.ResponseWriter, request *http.Request) {
 		return
 	}
 
-	jwtString, jwtErr := generateJWT(request.URL.Query().Get("expired") != "")
+	jwtString, jwtErr := generateJWT(savedKeys, request.URL.Query().Get("expired") != "")
 	if jwtErr == nil {
 		// Send response //
 		writer.Header().Set("Content-Type", "application/json")
@@ -157,7 +161,7 @@ func getJWKS(writer http.ResponseWriter, request *http.Request) {
 	// Send response //
 	writer.Header().Set("Content-Type", "application/json")
 	writer.Header().Set("Status", "200 OK")
-	encodeErr := json.NewEncoder(writer).Encode(getJWKs())
+	encodeErr := json.NewEncoder(writer).Encode(getJWKs(savedKeys))
 	if encodeErr != nil {
 		fmt.Printf("failed to encode response: %v", encodeErr)
 	}
@@ -165,7 +169,7 @@ func getJWKS(writer http.ResponseWriter, request *http.Request) {
 
 func main() {
 	fmt.Printf("Creating RSA key pairs...\n")
-	keys = generateKeys()
+	savedKeys = generateKeys()
 	fmt.Printf("Key pairs created!\n")
 
 	// Establish routes //
