@@ -109,10 +109,8 @@ func generateJWT(keys []KeyPair, shouldBeExpired bool) (string, error) {
 
 	// Generate JWT //
 	token := jwt.NewWithClaims(jwt.SigningMethodRS256, jwt.MapClaims{
-		"sub":  "1234567890",
-		"name": "John Doe",
-		"iat":  time.Now().Unix(),
-		"exp":  expireAt,
+		"iat": time.Now().Unix(),
+		"exp": expireAt,
 	})
 
 	// Send kid with token //
