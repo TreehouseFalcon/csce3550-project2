@@ -152,7 +152,7 @@ func getJWKSJson(writer http.ResponseWriter, request *http.Request) {
 
 	// Send response //
 	writer.Header().Set("Content-Type", "application/json")
-	json.NewEncoder(writer).Encode(getJWKs(savedKeys))
+	json.NewEncoder(writer).Encode(getJWKs(savedKeys)) //nolint:golint,errcheck
 }
 
 func main() {
