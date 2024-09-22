@@ -21,6 +21,7 @@ type KeyPair struct {
 	KID        string
 	PublicKey  *rsa.PublicKey
 	PrivateKey *rsa.PrivateKey
+	Expired    bool
 }
 
 // Store key info globally //
@@ -59,29 +60,29 @@ func generateKeys() []KeyPair {
 			KID:        activeKid,
 			PublicKey:  activePublicKey,
 			PrivateKey: activePrivateKey,
+			Expired:    false,
 		},
 		{
 			KID:        expiredKid,
 			PublicKey:  expiredPublicKey,
 			PrivateKey: expiredPrivateKey,
+			Expired:    true,
 		},
 	}
-}
-
-func resetKeys() {
-	savedKeys = nil
 }
 
 func getJWKs(keys []KeyPair) jose.JSONWebKeySet {
 	var jwks []jose.JSONWebKey
 	for _, key := range keys {
-		jwk := jose.JSONWebKey{
-			Key:       key.PublicKey,
-			KeyID:     key.KID,
-			Algorithm: string(jose.RS256),
-			Use:       "sig",
+		if !key.Expired {
+			jwk := jose.JSONWebKey{
+				Key:       key.PublicKey,
+				KeyID:     key.KID,
+				Algorithm: string(jose.RS256),
+				Use:       "sig",
+			}
+			jwks = append(jwks, jwk)
 		}
-		jwks = append(jwks, jwk)
 	}
 
 	keySet := jose.JSONWebKeySet{
@@ -151,7 +152,7 @@ func postAuth(writer http.ResponseWriter, request *http.Request) {
 }
 
 // GET /.well-known/jwks.json
-func getJWKS(writer http.ResponseWriter, request *http.Request) {
+func getJWKSJson(writer http.ResponseWriter, request *http.Request) {
 	// Only allow GET //
 	if request.Method != http.MethodGet {
 		http.Error(writer, "", http.StatusMethodNotAllowed)
@@ -174,7 +175,7 @@ func main() {
 
 	// Establish routes //
 	http.HandleFunc("/auth", postAuth)
-	http.HandleFunc("/.well-known/jwks.json", getJWKS)
+	http.HandleFunc("/.well-known/jwks.json", getJWKSJson)
 
 	// Serve web server //
 	serveErr := http.ListenAndServe(fmt.Sprintf(":%v", PORT), nil)

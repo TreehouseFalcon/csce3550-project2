@@ -22,12 +22,11 @@ func Test_getJWKs(t *testing.T) {
 	if keyCount != 1 {
 		t.Fatalf(`getJWKS returned %v keys, expected 1`, keyCount)
 	}
-
-	resetKeys()
 }
 
 func Test_generateJWT(t *testing.T) {
 	keys := generateKeys()
+
 	_, err := generateJWT(keys, false)
 	if err != nil {
 		t.Fatalf("error running generateJWT: %v", err)
