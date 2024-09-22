@@ -135,7 +135,7 @@ func postAuth(writer http.ResponseWriter, request *http.Request) {
 	jwtString, jwtErr := generateJWT(savedKeys, request.URL.Query().Get("expired") != "")
 	if jwtErr == nil {
 		writer.Header().Set("Content-Type", "application/json")
-		encodeErr := json.NewEncoder(writer).Encode(map[string]string{"token": jwtString})
+		encodeErr := json.NewEncoder(writer).Encode(map[string]string{"token": jwtString}) //nolint:golint,errcheck
 		if encodeErr != nil {
 			fmt.Printf("failed to encode response: %v", encodeErr)
 		}
@@ -159,5 +159,5 @@ func main() {
 	savedKeys = generateKeys()
 	http.HandleFunc("/auth", postAuth)
 	http.HandleFunc("/.well-known/jwks.json", getJWKSJson)
-	http.ListenAndServe(fmt.Sprintf(":%v", PORT), nil)
+	http.ListenAndServe(fmt.Sprintf(":%v", PORT), nil) //nolint:golint,errcheck
 }
