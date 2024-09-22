@@ -2,8 +2,6 @@ package main
 
 import (
 	"testing"
-
-	"github.com/davecgh/go-spew/spew"
 )
 
 func Test_generateKeys(t *testing.T) {
@@ -16,7 +14,6 @@ func Test_generateKeys(t *testing.T) {
 func Test_getJWKs(t *testing.T) {
 	keys := generateKeys()
 	jwks := getJWKs(keys)
-	spew.Dump(len(jwks.Keys))
 
 	keyCount := len(jwks.Keys)
 	if keyCount != 1 {
