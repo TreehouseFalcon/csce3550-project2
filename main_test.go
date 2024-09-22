@@ -29,6 +29,11 @@ func Test_generateJWT(t *testing.T) {
 
 	_, err := generateJWT(keys, false)
 	if err != nil {
-		t.Fatalf("error running generateJWT: %v", err)
+		t.Fatalf("error running generateJWT (expired=false): %v", err)
+	}
+
+	_, err = generateJWT(keys, true)
+	if err != nil {
+		t.Fatalf("error running generateJWT (expired=true): %v", err)
 	}
 }

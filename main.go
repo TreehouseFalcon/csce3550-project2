@@ -4,10 +4,8 @@ import (
 	"crypto/rand"
 	"crypto/rsa"
 	"encoding/json"
-	"errors"
 	"fmt"
 	"net/http"
-	"os"
 	"time"
 
 	"github.com/golang-jwt/jwt"
@@ -131,17 +129,12 @@ func generateJWT(keys []KeyPair, shouldBeExpired bool) (string, error) {
 
 // POST /auth
 func postAuth(writer http.ResponseWriter, request *http.Request) {
-	// Only allow POST //
 	if request.Method != http.MethodPost {
 		http.Error(writer, "", http.StatusMethodNotAllowed)
-		return
 	}
-
 	jwtString, jwtErr := generateJWT(savedKeys, request.URL.Query().Get("expired") != "")
 	if jwtErr == nil {
-		// Send response //
 		writer.Header().Set("Content-Type", "application/json")
-
 		encodeErr := json.NewEncoder(writer).Encode(map[string]string{"token": jwtString})
 		if encodeErr != nil {
 			fmt.Printf("failed to encode response: %v", encodeErr)
@@ -153,34 +146,18 @@ func postAuth(writer http.ResponseWriter, request *http.Request) {
 
 // GET /.well-known/jwks.json
 func getJWKSJson(writer http.ResponseWriter, request *http.Request) {
-	// Only allow GET //
 	if request.Method != http.MethodGet {
 		http.Error(writer, "", http.StatusMethodNotAllowed)
-		return
 	}
 
 	// Send response //
 	writer.Header().Set("Content-Type", "application/json")
-	writer.Header().Set("Status", "200 OK")
-	encodeErr := json.NewEncoder(writer).Encode(getJWKs(savedKeys))
-	if encodeErr != nil {
-		fmt.Printf("failed to encode response: %v", encodeErr)
-	}
+	json.NewEncoder(writer).Encode(getJWKs(savedKeys))
 }
 
 func main() {
-	fmt.Printf("Creating RSA key pairs...\n")
 	savedKeys = generateKeys()
-	fmt.Printf("Key pairs created!\n")
-
-	// Establish routes //
 	http.HandleFunc("/auth", postAuth)
 	http.HandleFunc("/.well-known/jwks.json", getJWKSJson)
-
-	// Serve web server //
-	serveErr := http.ListenAndServe(fmt.Sprintf(":%v", PORT), nil)
-	if errors.Is(serveErr, http.ErrServerClosed) {
-		fmt.Printf("Error serving on port %v: %v\n", PORT, serveErr)
-		os.Exit(-1)
-	}
+	http.ListenAndServe(fmt.Sprintf(":%v", PORT), nil)
 }
