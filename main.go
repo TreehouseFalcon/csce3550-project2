@@ -136,7 +136,11 @@ func postAuth(writer http.ResponseWriter, request *http.Request) {
 	if jwtErr == nil {
 		// Send response //
 		writer.Header().Set("Content-Type", "application/json")
-		json.NewEncoder(writer).Encode(map[string]string{"token": jwtString})
+
+		encodeErr := json.NewEncoder(writer).Encode(map[string]string{"token": jwtString})
+		if encodeErr != nil {
+			fmt.Printf("failed to encode response: %v", encodeErr)
+		}
 	} else {
 		http.Error(writer, jwtErr.Error(), http.StatusInternalServerError)
 	}
@@ -153,7 +157,10 @@ func getJWKS(writer http.ResponseWriter, request *http.Request) {
 	// Send response //
 	writer.Header().Set("Content-Type", "application/json")
 	writer.Header().Set("Status", "200 OK")
-	json.NewEncoder(writer).Encode(getJWKs())
+	encodeErr := json.NewEncoder(writer).Encode(getJWKs())
+	if encodeErr != nil {
+		fmt.Printf("failed to encode response: %v", encodeErr)
+	}
 }
 
 func main() {
