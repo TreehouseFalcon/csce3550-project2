@@ -6,6 +6,6 @@ To run: `go run .`
 
 To test: `go test`
 
-![Gradebot result 100%](gradebot_result.png)
+![Gradebot result 100%](gradebot_result_2.png)
 
-![Test coverage and result](coverage_result.png)
+![Test coverage and result](coverage_result_2.png)
