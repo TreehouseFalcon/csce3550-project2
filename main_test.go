@@ -18,7 +18,10 @@ func Test_initKeys(t *testing.T) {
 	defer db.Close()
 
 	db, _ = initDb()
-	db.Exec("DELETE FROM keys;")
+	_, err := db.Exec("DELETE FROM keys;")
+	if err != nil {
+		t.Fatalf(`failed to clear keys from DB`)
+	}
 	initKeys(db)
 	defer db.Close()
 }
