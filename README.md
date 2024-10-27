@@ -1,4 +1,4 @@
-# Project 1 - CSCE3550 Cybersecurity
+# Project 2 - CSCE3550 Cybersecurity
 
 Made by Juniper Hovey
 
