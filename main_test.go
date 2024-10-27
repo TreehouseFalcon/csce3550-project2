@@ -4,32 +4,45 @@ import (
 	"testing"
 )
 
-func Test_generateKeys(t *testing.T) {
-	keys := generateKeys()
-	if len(keys) != 2 {
-		t.Fatalf(`generateKeys returned %v keys, expected 2`, len(keys))
+func Test_initDb(t *testing.T) {
+	db, err := initDb()
+	if err != nil {
+		t.Fatalf(`initDb threw an error: %v\n`, err)
 	}
+	defer db.Close()
 }
 
-func Test_getJWKs(t *testing.T) {
-	keys := generateKeys()
-	jwks := getJWKs(keys)
+func Test_initKeys(t *testing.T) {
+	db, _ = initDb()
+	initKeys(db)
+	defer db.Close()
 
-	keyCount := len(jwks.Keys)
-	if keyCount != 1 {
-		t.Fatalf(`getJWKS returned %v keys, expected 1`, keyCount)
+	db, _ = initDb()
+	db.Exec("DELETE FROM keys;")
+	initKeys(db)
+	defer db.Close()
+}
+
+func Test_readKeys(t *testing.T) {
+	db, _ = initDb()
+	initKeys(db)
+	keys := readKeys(db, true)
+	if len(keys.Keys) != 2 {
+		t.Fatalf(`readKeys returned %v keys, expected 2`, len(keys.Keys))
 	}
+	defer db.Close()
 }
 
 func Test_generateJWT(t *testing.T) {
-	keys := generateKeys()
+	db, _ = initDb()
+	initKeys(db)
 
-	_, err := generateJWT(keys, false)
+	_, err := generateJWT(false)
 	if err != nil {
 		t.Fatalf("error running generateJWT (expired=false): %v", err)
 	}
 
-	_, err = generateJWT(keys, true)
+	_, err = generateJWT(true)
 	if err != nil {
 		t.Fatalf("error running generateJWT (expired=true): %v", err)
 	}
